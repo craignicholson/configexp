@@ -86,7 +86,7 @@ func main() {
 	*/
 	err := filepath.Walk(rootpath, func(path string, f os.FileInfo, err error) error {
 		var ext = filepath.Ext(path)
-		fmt.Println(filepath.Base(path))
+
 		if ext == ".config" {
 			fileList = append(fileList, path)
 		}
@@ -94,11 +94,10 @@ func main() {
 	})
 	checkError(err)
 
-	// iterate over the list of files and print out
-	// the key value pairs in appSettings.add
+	// iterate over the list of files
 	for _, file := range fileList {
 		ReadXML(file, filepath.Base(file))
-		fmt.Println("\n\n")
+		fmt.Printf("\n")
 	}
 }
 
@@ -124,7 +123,6 @@ func ReadXML(filepath string, filename string) {
 
 	if fileType == 1 {
 		xml.Unmarshal(XMLdata, &c)
-
 		for _, k := range c.Add {
 			fmt.Printf("Key: %s, Value: %s\n", k.Key, k.Value)
 		}
