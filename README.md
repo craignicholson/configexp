@@ -1,6 +1,6 @@
 # configexp
 Discovery tool for finding and parsing .Net config web.config and AppName.config
-file which contains the <appSettings></appSettings>.
+file which contains the appSettings.
 
 This tool will assume all files are in one root directory.
 ## Tasks
