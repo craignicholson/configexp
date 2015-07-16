@@ -11,14 +11,23 @@ import (
 )
 
 /*
-File Type 1 is a config file which exists outside of the web.config format
+
+File Type 1 is a config file which the key value paris have been moved from
+the web.config file to a location outside of the web apps binaries.  The reason
+for moving the configs is so the code can be updated without overwriting the
+configs specific for the site
+
 <appSettings>
   <add key="LogoUrl" value="~/img/logo_new.png"/>
   <add key="FavIcon" value="~/img/favicon_etss.ico"/>
 </appSettings>
 */
 
-/* File Type 2 is the web.config format which exists in the web application code
+/*
+File Type 2 is the web.config format which exists in the
+web application code.  Typically this config values are non specific
+and are used for all web sites.
+
 <configuration>
  <location allowOverride="true">
 	<appSettings file="DAL.config">
@@ -70,9 +79,14 @@ func main() {
 	}
 
 	fileList := []string{}
-	//http://golang.org/pkg/path/filepath/#Walk
+	/* http://golang.org/pkg/path/filepath/
+	filepath.Base - returns the name of the file
+	filepath.Ext  - returns the filename extenstion
+
+	*/
 	err := filepath.Walk(rootpath, func(path string, f os.FileInfo, err error) error {
 		var ext = filepath.Ext(path)
+		fmt.Println(filepath.Base(path))
 		if ext == ".config" {
 			fileList = append(fileList, path)
 		}
@@ -83,14 +97,13 @@ func main() {
 	// iterate over the list of files and print out
 	// the key value pairs in appSettings.add
 	for _, file := range fileList {
-		fmt.Println(file)
-		ReadXML(file)
+		ReadXML(file, filepath.Base(file))
 		fmt.Println("\n\n")
 	}
 }
 
 // ReadXML will read emit the key values in a .Net config file
-func ReadXML(filepath string) {
+func ReadXML(filepath string, filename string) {
 
 	xmlFile, err := os.Open(filepath)
 	if err != nil {
@@ -102,10 +115,30 @@ func ReadXML(filepath string) {
 	XMLdata, _ := ioutil.ReadAll(xmlFile)
 
 	var c AppSettings
-	xml.Unmarshal(XMLdata, &c)
+	var a Configuration
 
-	for _, k := range c.Add {
-		fmt.Printf("Key: %s, Value: %s\n", k.Key, k.Value)
+	fileType := 1
+	if filename == "web.config" {
+		fileType = 2
+	}
+
+	if fileType == 1 {
+		xml.Unmarshal(XMLdata, &c)
+
+		for _, k := range c.Add {
+			fmt.Printf("Key: %s, Value: %s\n", k.Key, k.Value)
+		}
+	}
+
+	if fileType == 2 {
+		xml.Unmarshal(XMLdata, &a)
+		for _, l := range a.Location {
+			for _, as := range l.AppSettings {
+				for _, k := range as.Add {
+					fmt.Printf("Key: %s, Value: %s\n", k.Key, k.Value)
+				}
+			}
+		}
 	}
 }
 
